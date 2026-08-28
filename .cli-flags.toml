@@ -15,3 +15,21 @@ long = "json"
 switch = true
 help = "Emit JSON"
 
+
+[flags.declmig-api-http-base]
+env = "DECLMIG_API_HTTP_BASE"
+long = "declmig-api-http-base"
+type = "string"
+help = "Runtime environment key DECLMIG_API_HTTP_BASE."
+
+[flags.declmig-database-url]
+env = "DECLMIG_DATABASE_URL"
+long = "declmig-database-url"
+type = "string"
+help = "Runtime environment key DECLMIG_DATABASE_URL."
+
+[flags.declmig-web-bind]
+env = "DECLMIG_WEB_BIND"
+long = "declmig-web-bind"
+type = "string"
+help = "Runtime environment key DECLMIG_WEB_BIND."

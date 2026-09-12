@@ -29,3 +29,7 @@ maxOvershoot = 0
 maxBlockTtlMs = 1000
 keyVersion = "v1"
 policyVersion = 1
+[client]
+root = "."
+exposePolicyMetadata = true
+

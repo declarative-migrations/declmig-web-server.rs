@@ -43,7 +43,7 @@ impl WebConfig {
             if authority.is_empty()
                 || authority.starts_with(':')
                 || api.chars().any(char::is_whitespace)
-                || api.contains(['@', '#', '?', '\\'])
+                || api.chars().any(|ch| ch == '@' || ch == '#' || ch == '?' || ch == char::from(92u8))
             {
                 return Err("DECLMIG_API_HTTP_BASE must be a valid base without credentials or query");
             }

@@ -1,7 +1,6 @@
 //! Fail-closed argv and environment resolution through flags-2-env.
 
 use std::collections::BTreeMap;
-use std::io::Write;
 
 use flags2env::BundledFlags2Env;
 use tempfile::NamedTempFile;
@@ -16,10 +15,9 @@ fn resolve_from(
     argv: &[String],
     environment: impl IntoIterator<Item = (String, String)>,
 ) -> Result<BTreeMap<String, String>, String> {
-    let mut contract = NamedTempFile::new()
+    let contract = NamedTempFile::new()
         .map_err(|error| format!("cannot create embedded flags-2-env contract: {error}"))?;
-    contract
-        .write_all(CONTRACT.as_bytes())
+    std::fs::write(contract.path(), CONTRACT.as_bytes())
         .map_err(|error| format!("cannot materialize embedded flags-2-env contract: {error}"))?;
     let path = contract
         .path()
@@ -55,10 +53,13 @@ fn resolve_from(
         ));
     }
 
-    let mut raw = parsed.dotenv;
-    raw.extend(environment);
-    raw.extend(parsed.dotenv_overrides);
-    raw.extend(parsed.provided_flags);
+    let raw: BTreeMap<String, String> = parsed
+        .dotenv
+        .into_iter()
+        .chain(environment)
+        .chain(parsed.dotenv_overrides)
+        .chain(parsed.provided_flags)
+        .collect();
     let typed = parser
         .coerce::<serde_json::Map<String, serde_json::Value>, _>(&raw, Some(path))
         .map_err(|error| format!("flags-2-env typed configuration failed: {error}"))?;
@@ -74,7 +75,9 @@ fn scalar_string(name: &str, value: serde_json::Value) -> Result<String, String>
         serde_json::Value::String(value) => Ok(value),
         serde_json::Value::Bool(value) => Ok(value.to_string()),
         serde_json::Value::Number(value) => Ok(value.to_string()),
-        _ => Err(format!(
+        serde_json::Value::Null
+        | serde_json::Value::Array(_)
+        | serde_json::Value::Object(_) => Err(format!(
             "flags-2-env returned a non-scalar value for {name}"
         )),
     }
